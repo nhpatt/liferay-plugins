@@ -166,8 +166,9 @@ public class CalendarBookingLocalServiceImpl
 		}
 
 		calendarBooking.setVEventUid(vEventUid);
-		calendarBooking.setTitleMap(titleMap);
-		calendarBooking.setDescriptionMap(descriptionMap);
+		calendarBooking.setTitleMap(titleMap, serviceContext.getLocale());
+		calendarBooking.setDescriptionMap(
+			descriptionMap, serviceContext.getLocale());
 		calendarBooking.setLocation(location);
 		calendarBooking.setStartTime(startTimeJCalendar.getTimeInMillis());
 		calendarBooking.setEndTime(endTimeJCalendar.getTimeInMillis());
@@ -812,8 +813,9 @@ public class CalendarBookingLocalServiceImpl
 		calendarBooking.setGroupId(calendar.getGroupId());
 		calendarBooking.setModifiedDate(serviceContext.getModifiedDate(null));
 		calendarBooking.setCalendarId(calendarId);
-		calendarBooking.setTitleMap(titleMap);
-		calendarBooking.setDescriptionMap(descriptionMap);
+		calendarBooking.setTitleMap(titleMap, serviceContext.getLocale());
+		calendarBooking.setDescriptionMap(
+			descriptionMap, serviceContext.getLocale());
 		calendarBooking.setLocation(location);
 		calendarBooking.setStartTime(startTimeJCalendar.getTimeInMillis());
 		calendarBooking.setEndTime(endTimeJCalendar.getTimeInMillis());
@@ -907,8 +909,10 @@ public class CalendarBookingLocalServiceImpl
 			calendarBooking, instanceIndex, allFollowing);
 
 		if (allFollowing) {
+			Calendar calendar = calendarLocalService.getCalendar(calendarId);
+
 			Recurrence recurrenceObj = RecurrenceSerializer.deserialize(
-				recurrence);
+				recurrence, calendar.getTimeZone());
 
 			if (oldRecurrence.equals(recurrence) &&
 				(recurrenceObj.getCount() > 0)) {
@@ -1219,7 +1223,8 @@ public class CalendarBookingLocalServiceImpl
 			return;
 		}
 
-		Recurrence recurrenceObj = RecurrenceSerializer.deserialize(recurrence);
+		Recurrence recurrenceObj = RecurrenceSerializer.deserialize(
+			recurrence, startTimeJCalendar.getTimeZone());
 
 		if ((recurrenceObj.getUntilJCalendar() != null) &&
 			startTimeJCalendar.after(recurrenceObj.getUntilJCalendar())) {

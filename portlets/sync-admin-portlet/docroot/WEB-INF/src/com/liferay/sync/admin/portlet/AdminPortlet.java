@@ -14,7 +14,6 @@
 
 package com.liferay.sync.admin.portlet;
 
-import com.liferay.oauth.model.OAuthApplication;
 import com.liferay.portal.kernel.deploy.DeployManagerUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -27,7 +26,8 @@ import com.liferay.portal.security.auth.CompanyThreadLocal;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextFactory;
-import com.liferay.sync.OAuthPortletUndeployedException;
+import com.liferay.sync.admin.exception.OAuthPortletUndeployedException;
+import com.liferay.sync.service.SyncDeviceLocalServiceUtil;
 import com.liferay.sync.service.SyncPreferencesLocalServiceUtil;
 import com.liferay.sync.shared.util.PortletPropsKeys;
 import com.liferay.util.bridges.mvc.MVCPortlet;
@@ -44,6 +44,26 @@ import javax.portlet.PortletPreferences;
  * @author Jonathan McCann
  */
 public class AdminPortlet extends MVCPortlet {
+
+	public void deleteDevice(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		long syncDeviceId = ParamUtil.getLong(actionRequest, "syncDeviceId");
+
+		SyncDeviceLocalServiceUtil.deleteSyncDevice(syncDeviceId);
+	}
+
+	public void updateDevice(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
+
+		long syncDeviceId = ParamUtil.getLong(actionRequest, "syncDeviceId");
+
+		int status = ParamUtil.getInteger(actionRequest, "status");
+
+		SyncDeviceLocalServiceUtil.updateStatus(syncDeviceId, status);
+	}
 
 	public void updatePreferences(
 			ActionRequest actionRequest, ActionResponse actionResponse)
@@ -116,6 +136,17 @@ public class AdminPortlet extends MVCPortlet {
 		boolean oAuthEnabled = ParamUtil.getBoolean(
 			actionRequest, "oAuthEnabled");
 
+		portletPreferences.setValue(
+			PortletPropsKeys.SYNC_OAUTH_ENABLED, String.valueOf(oAuthEnabled));
+
+		int pollInterval = ParamUtil.getInteger(actionRequest, "pollInterval");
+
+		portletPreferences.setValue(
+			PortletPropsKeys.SYNC_CLIENT_POLL_INTERVAL,
+			String.valueOf(pollInterval));
+
+		portletPreferences.store();
+
 		if (oAuthEnabled) {
 			PluginPackage oAuthPortletPluginPackage =
 				DeployManagerUtil.getInstalledPluginPackage("oauth-portlet");
@@ -130,31 +161,9 @@ public class AdminPortlet extends MVCPortlet {
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				actionRequest);
 
-			OAuthApplication oAuthApplication =
-				SyncPreferencesLocalServiceUtil.enableOAuth(
-					CompanyThreadLocal.getCompanyId(), serviceContext);
-
-			portletPreferences.setValue(
-				PortletPropsKeys.SYNC_OAUTH_APPLICATION_ID,
-				String.valueOf(oAuthApplication.getOAuthApplicationId()));
-			portletPreferences.setValue(
-				PortletPropsKeys.SYNC_OAUTH_CONSUMER_KEY,
-				oAuthApplication.getConsumerKey());
-			portletPreferences.setValue(
-				PortletPropsKeys.SYNC_OAUTH_CONSUMER_SECRET,
-				oAuthApplication.getConsumerSecret());
+			SyncPreferencesLocalServiceUtil.enableOAuth(
+				CompanyThreadLocal.getCompanyId(), serviceContext);
 		}
-
-		portletPreferences.setValue(
-			PortletPropsKeys.SYNC_OAUTH_ENABLED, String.valueOf(oAuthEnabled));
-
-		int pollInterval = ParamUtil.getInteger(actionRequest, "pollInterval");
-
-		portletPreferences.setValue(
-			PortletPropsKeys.SYNC_CLIENT_POLL_INTERVAL,
-			String.valueOf(pollInterval));
-
-		portletPreferences.store();
 	}
 
 }

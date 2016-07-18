@@ -167,6 +167,19 @@ public class StorePortlet extends RemoteMVCPortlet {
 		writeJSON(actionRequest, actionResponse, jsonObject);
 	}
 
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		try {
+			super.render(renderRequest, renderResponse);
+		}
+		catch (PortletException pe) {
+			include("/store/error.jsp", renderRequest, renderResponse);
+		}
+	}
+
 	public void uninstallApp(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
@@ -334,9 +347,13 @@ public class StorePortlet extends RemoteMVCPortlet {
 		parameterMap.put(
 			"clientBuild",
 			new String[] {String.valueOf(MarketplaceConstants.CLIENT_BUILD)});
-		parameterMap.put(
-			"compatibility",
-			new String[] {String.valueOf(ReleaseInfo.getBuildNumber())});
+
+		if (!parameterMap.containsKey("compatibility")) {
+			parameterMap.put(
+				"compatibility",
+				new String[] {String.valueOf(ReleaseInfo.getBuildNumber())});
+		}
+
 		parameterMap.put(
 			"supportsHotDeploy",
 			new String[] {

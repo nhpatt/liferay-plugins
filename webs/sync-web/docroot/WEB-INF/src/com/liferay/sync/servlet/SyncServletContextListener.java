@@ -14,7 +14,6 @@
 
 package com.liferay.sync.servlet;
 
-import com.liferay.oauth.model.OAuthApplication;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
@@ -37,8 +36,8 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.model.DLSyncEvent;
 import com.liferay.portlet.documentlibrary.service.DLSyncEventLocalServiceUtil;
+import com.liferay.sync.messaging.DLSyncEventMessageListener;
 import com.liferay.sync.messaging.SyncDLFileVersionDiffMessageListener;
-import com.liferay.sync.messaging.SyncDLObjectMessageListener;
 import com.liferay.sync.service.SyncDLObjectLocalServiceUtil;
 import com.liferay.sync.service.SyncPreferencesLocalServiceUtil;
 import com.liferay.sync.util.PortletPropsKeys;
@@ -48,8 +47,6 @@ import com.liferay.sync.util.VerifyUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.portlet.PortletPreferences;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -114,7 +111,7 @@ public class SyncServletContextListener
 	protected void doPortalDestroy() throws Exception {
 		MessageBusUtil.unregisterMessageListener(
 			DestinationNames.DOCUMENT_LIBRARY_SYNC_EVENT_PROCESSOR,
-			_syncDLObjectMessageListener);
+			_dlSyncEventMessageListener);
 
 		if (PortletPropsValues.SYNC_FILE_DIFF_CACHE_ENABLED) {
 			MessageBusUtil.unregisterMessageListener(
@@ -152,34 +149,18 @@ public class SyncServletContextListener
 
 				serviceContext.setUserId(user.getUserId());
 
-				OAuthApplication oAuthApplication =
-					SyncPreferencesLocalServiceUtil.enableOAuth(
-						company.getCompanyId(), serviceContext);
-
-				PortletPreferences portletPreferences =
-					PrefsPropsUtil.getPreferences(company.getCompanyId());
-
-				portletPreferences.setValue(
-					PortletPropsKeys.SYNC_OAUTH_APPLICATION_ID,
-					String.valueOf(oAuthApplication.getOAuthApplicationId()));
-				portletPreferences.setValue(
-					PortletPropsKeys.SYNC_OAUTH_CONSUMER_KEY,
-					oAuthApplication.getConsumerKey());
-				portletPreferences.setValue(
-					PortletPropsKeys.SYNC_OAUTH_CONSUMER_SECRET,
-					oAuthApplication.getConsumerSecret());
-
-				portletPreferences.store();
+				SyncPreferencesLocalServiceUtil.enableOAuth(
+					company.getCompanyId(), serviceContext);
 			}
 		}
 		catch (Exception e) {
 			_log.error(e, e);
 		}
 
-		_syncDLObjectMessageListener = new SyncDLObjectMessageListener();
+		_dlSyncEventMessageListener = new DLSyncEventMessageListener();
 
 		registerMessageListener(
-			_syncDLObjectMessageListener,
+			_dlSyncEventMessageListener,
 			DestinationNames.DOCUMENT_LIBRARY_SYNC_EVENT_PROCESSOR);
 
 		if (PortletPropsValues.SYNC_FILE_DIFF_CACHE_ENABLED) {
@@ -234,7 +215,7 @@ public class SyncServletContextListener
 	private static Log _log = LogFactoryUtil.getLog(
 		SyncServletContextListener.class);
 
+	private MessageListener _dlSyncEventMessageListener;
 	private MessageListener _syncDLFileVersionDiffMessageListener;
-	private MessageListener _syncDLObjectMessageListener;
 
 }

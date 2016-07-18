@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -974,10 +975,39 @@ public class FileSystemImporter extends BaseImporter {
 					"layoutPrototypeUuid", layoutPrototypeUuid);
 			}
 
-			Layout layout = LayoutLocalServiceUtil.addLayout(
-				userId, groupId, privateLayout, parentLayoutId, nameMap,
-				titleMap, null, null, null, type, typeSettings, hidden,
-				friendlyURLMap, serviceContext);
+			Layout layout = LayoutLocalServiceUtil.fetchLayoutByFriendlyURL(
+				groupId, privateLayout, friendlyURL);
+
+			if (layout != null) {
+				if (!developerModeEnabled) {
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							"Layout with friendly URL " + friendlyURL +
+								" already exists");
+				}
+
+					return;
+				}
+
+				if (!updateModeEnabled) {
+					LayoutLocalServiceUtil.deleteLayout(layout);
+				}
+			}
+
+			if (!updateModeEnabled || (layout == null)) {
+				layout = LayoutLocalServiceUtil.addLayout(
+					userId, groupId, privateLayout, parentLayoutId, nameMap,
+					titleMap, null, null, null, type, typeSettings, hidden,
+					friendlyURLMap, serviceContext);
+			}
+			else {
+				layout = LayoutLocalServiceUtil.updateLayout(
+					groupId, privateLayout, layout.getLayoutId(),
+					parentLayoutId, nameMap, titleMap,
+					layout.getDescriptionMap(), layout.getKeywordsMap(),
+					layout.getRobotsMap(), type, hidden, friendlyURLMap,
+					layout.getIconImage(), null, serviceContext);
+			}
 
 			LayoutTypePortlet layoutTypePortlet =
 				(LayoutTypePortlet)layout.getLayoutType();
@@ -1056,6 +1086,10 @@ public class FileSystemImporter extends BaseImporter {
 
 		String portletId = layoutTypePortlet.addPortletId(
 			userId, rootPortletId, columnId, -1, false);
+
+		if (portletId == null) {
+			return;
+		}
 
 		JSONObject portletPreferencesJSONObject =
 			portletJSONObject.getJSONObject("portletPreferences");
@@ -1260,6 +1294,11 @@ public class FileSystemImporter extends BaseImporter {
 
 		boolean indexReadOnly = SearchEngineUtil.isIndexReadOnly();
 
+		boolean layoutImportInProcess =
+			ExportImportThreadLocal.isLayoutImportInProcess();
+		boolean portletImportInProcess =
+			ExportImportThreadLocal.isPortletImportInProcess();
+
 		try {
 			SearchEngineUtil.setIndexReadOnly(true);
 
@@ -1268,6 +1307,9 @@ public class FileSystemImporter extends BaseImporter {
 			setUpSitemap("sitemap.json");
 
 			SearchEngineUtil.setIndexReadOnly(false);
+
+			ExportImportThreadLocal.setLayoutImportInProcess(false);
+			ExportImportThreadLocal.setPortletImportInProcess(false);
 
 			long startTime = System.currentTimeMillis();
 
@@ -1285,6 +1327,11 @@ public class FileSystemImporter extends BaseImporter {
 		}
 		finally {
 			SearchEngineUtil.setIndexReadOnly(indexReadOnly);
+
+			ExportImportThreadLocal.setLayoutImportInProcess(
+				layoutImportInProcess);
+			ExportImportThreadLocal.setPortletImportInProcess(
+				portletImportInProcess);
 		}
 	}
 

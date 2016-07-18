@@ -17,20 +17,30 @@ package com.liferay.asset.entry.set.util;
 import com.liferay.asset.entry.set.model.AssetEntrySet;
 import com.liferay.asset.entry.set.service.AssetEntrySetLocalServiceUtil;
 import com.liferay.asset.entry.set.service.persistence.AssetEntrySetActionableDynamicQuery;
+import com.liferay.asset.sharing.model.AssetSharingEntry;
+import com.liferay.asset.sharing.service.AssetSharingEntryLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
+import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
+import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.TermQuery;
+import com.liferay.portal.kernel.search.TermQueryFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringPool;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletURL;
@@ -60,12 +70,42 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 	}
 
 	@Override
+	public void postProcessContextQuery(
+			BooleanQuery contextQuery, SearchContext searchContext)
+		throws Exception {
+
+		contextQuery.addRequiredTerm("parentAssetEntrySetId", 0);
+
+		BooleanQuery booleanQuery = BooleanQueryFactoryUtil.create(
+			searchContext);
+
+		String[] membershipSearchTerms =
+			AssetEntrySetParticipantInfoUtil.getMembershipSearchTerms(
+				searchContext.getUserId());
+
+		for (String membershipSearchTerm : membershipSearchTerms) {
+			booleanQuery.add(
+				getBooleanQuery(
+					searchContext, "sharedTo", membershipSearchTerm),
+				BooleanClauseOccur.SHOULD);
+		}
+
+		booleanQuery.add(
+			getBooleanQuery(
+				searchContext, "privateAssetEntrySet", StringPool.FALSE),
+			BooleanClauseOccur.SHOULD);
+
+		contextQuery.add(booleanQuery, BooleanClauseOccur.MUST);
+	}
+
+	@Override
 	public void postProcessSearchQuery(
 			BooleanQuery searchQuery, SearchContext searchContext)
 		throws Exception {
 
 		addSearchTerm(searchQuery, searchContext, "creatorName", true);
 		addSearchTerm(searchQuery, searchContext, "message", true);
+		addSearchTerm(searchQuery, searchContext, "title", true);
 	}
 
 	@Override
@@ -85,20 +125,23 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 
 		Document document = getBaseModelDocument(PORTLET_ID, assetEntrySet);
 
-		document.addKeyword(
-			Field.MODIFIED_DATE, assetEntrySet.getModifiedTime());
 		document.addKeyword(Field.TYPE, payloadJSONObject.getString("type"));
 
+		document.addKeyword("createTime", assetEntrySet.getCreateTime());
 		document.addText(
 			"creatorName",
 			AssetEntrySetParticipantInfoUtil.getParticipantName(
 				assetEntrySet.getCreatorClassNameId(),
 				assetEntrySet.getCreatorClassPK()));
 		document.addText("message", payloadJSONObject.getString("message"));
+		document.addKeyword("modifiedTime", assetEntrySet.getModifiedTime());
 		document.addKeyword(
 			"parentAssetEntrySetId", assetEntrySet.getParentAssetEntrySetId());
 		document.addKeyword(
 			"privateAssetEntrySet", assetEntrySet.getPrivateAssetEntrySet());
+		document.addKeyword(
+			"sharedTo", getSharedTo(assetEntrySet.getAssetEntrySetId()));
+		document.addText("title", payloadJSONObject.getString("title"));
 
 		return document;
 	}
@@ -120,6 +163,14 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 
 		SearchEngineUtil.updateDocument(
 			getSearchEngineId(), assetEntrySet.getCompanyId(), document);
+
+		if (assetEntrySet.getParentAssetEntrySetId() > 0) {
+			AssetEntrySet parentAssetEntrySet =
+				AssetEntrySetLocalServiceUtil.getAssetEntrySet(
+					assetEntrySet.getParentAssetEntrySetId());
+
+			doReindex(parentAssetEntrySet);
+		}
 	}
 
 	@Override
@@ -137,9 +188,43 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 		reindexEntries(companyId);
 	}
 
+	protected BooleanQuery getBooleanQuery(
+			SearchContext searchContext, String field, String value)
+		throws Exception {
+
+		BooleanQuery booleanQuery = BooleanQueryFactoryUtil.create(
+			searchContext);
+
+		TermQuery termQuery = TermQueryFactoryUtil.create(
+			searchContext, field, value);
+
+		booleanQuery.add(termQuery, BooleanClauseOccur.MUST);
+
+		return booleanQuery;
+	}
+
 	@Override
 	protected String getPortletId(SearchContext searchContext) {
 		return PORTLET_ID;
+	}
+
+	protected String[] getSharedTo(long assetEntrySetId) throws Exception {
+		List<AssetSharingEntry> assetSharingEntries =
+			AssetSharingEntryLocalServiceUtil.getAssetSharingEntries(
+				AssetEntrySetConstants.ASSET_ENTRY_SET_CLASS_NAME_ID,
+				assetEntrySetId);
+
+		String[] sharedTo = new String[assetSharingEntries.size()];
+
+		for (int i = 0; i < assetSharingEntries.size(); i++) {
+			AssetSharingEntry assetSharingEntry = assetSharingEntries.get(i);
+
+			sharedTo[i] = AssetEntrySetParticipantInfoUtil.getSearchTerm(
+				assetSharingEntry.getSharedToClassNameId(),
+				assetSharingEntry.getSharedToClassPK());
+		}
+
+		return sharedTo;
 	}
 
 	protected void reindexEntries(long companyId)
@@ -149,14 +234,22 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 			new AssetEntrySetActionableDynamicQuery() {
 
 				@Override
-				protected void performAction(Object object)
-					throws PortalException, SystemException {
-
+				protected void performAction(Object object) {
 					AssetEntrySet assetEntrySet = (AssetEntrySet)object;
 
-					Document document = getDocument(assetEntrySet);
+					try {
+						Document document = getDocument(assetEntrySet);
 
-					addDocument(document);
+						addDocument(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index asset entry set " +
+									assetEntrySet.getAssetEntrySetId(),
+								pe);
+						}
+					}
 				}
 		};
 
@@ -165,5 +258,7 @@ public class AssetEntrySetIndexer extends BaseIndexer {
 
 		actionableDynamicQuery.performActions();
 	}
+
+	private static Log _log = LogFactoryUtil.getLog(AssetEntrySetIndexer.class);
 
 }

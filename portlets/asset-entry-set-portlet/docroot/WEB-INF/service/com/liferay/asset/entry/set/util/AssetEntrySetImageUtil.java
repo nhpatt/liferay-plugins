@@ -27,15 +27,20 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Image;
+import com.liferay.portal.model.Repository;
 import com.liferay.portal.model.User;
 import com.liferay.portal.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.Field;
@@ -49,6 +54,7 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -72,7 +78,7 @@ public class AssetEntrySetImageUtil {
 
 		FileEntry fileEntry = addFileEntry(
 			userId, classNameId, classPK, portletId, file,
-			AssetEntrySetConstants.IMAGE_TYPE_RAW);
+			AssetEntrySetConstants.IMAGE_TYPE_RAW, file.getName());
 
 		return getImageJSONObject(
 			JSONFactoryUtil.createJSONObject(), fileEntry,
@@ -93,7 +99,7 @@ public class AssetEntrySetImageUtil {
 
 			rawFileEntry = addFileEntry(
 				userId, classNameId, classPK, portletId, file,
-				AssetEntrySetConstants.IMAGE_TYPE_RAW);
+				AssetEntrySetConstants.IMAGE_TYPE_RAW, file.getName());
 
 			imageBag = ImageToolUtil.read(rawFileEntry.getContentStream());
 		}
@@ -106,15 +112,19 @@ public class AssetEntrySetImageUtil {
 		for (String imageType : imageMaxSizes.keySet()) {
 			FileEntry fileEntry = rawFileEntry;
 
-			if ((!imageType.equals(AssetEntrySetConstants.IMAGE_TYPE_FULL) ||
-				 !Validator.equals(
+			if (imageType.equals(AssetEntrySetConstants.IMAGE_TYPE_FULL) &&
+				Validator.equals(
 					MimeTypesUtil.getContentType(file),
-					ContentTypes.IMAGE_GIF)) &&
-				!imageType.equals(AssetEntrySetConstants.IMAGE_TYPE_RAW)) {
+					ContentTypes.IMAGE_GIF)) {
 
+				fileEntry = addFileEntry(
+					userId, classNameId, classPK, portletId, file, imageType,
+					file.getName());
+			}
+			else if (!imageType.equals(AssetEntrySetConstants.IMAGE_TYPE_RAW)) {
 				fileEntry = addScaledImageFileEntry(
 					userId, classNameId, 0L, portletId, imageBag, imageType,
-					imageMaxSizes.get(imageType));
+					file.getName(), imageMaxSizes.get(imageType));
 			}
 
 			imageJSONObject = getImageJSONObject(
@@ -126,7 +136,8 @@ public class AssetEntrySetImageUtil {
 
 	public static FileEntry addScaledImageFileEntry(
 			long userId, long classNameId, long classPK, String portletId,
-			ImageBag imageBag, String imageType, String imageMaxSize)
+			ImageBag imageBag, String imageType, String originalFileName,
+			String imageMaxSize)
 		throws PortalException, SystemException {
 
 		File scaledFile = null;
@@ -144,7 +155,8 @@ public class AssetEntrySetImageUtil {
 					scaledRenderedImage, imageBag.getType()));
 
 			return addFileEntry(
-				userId, classNameId, classPK, portletId, scaledFile, imageType);
+				userId, classNameId, classPK, portletId, scaledFile, imageType,
+				originalFileName);
 		}
 		catch (IOException ioe) {
 			throw new SystemException(ioe);
@@ -169,25 +181,24 @@ public class AssetEntrySetImageUtil {
 
 		imageJSONObject.put("fileEntryIds", fileEntryIdsJSONObject);
 
-		try {
-			Image image = ImageToolUtil.getImage(
-				DLFileEntryLocalServiceUtil.getFileAsStream(
-					fileEntry.getFileEntryId(), fileEntry.getVersion(), false));
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.getDLFileEntry(
+			fileEntry.getFileEntryId());
 
-			imageJSONObject.put("height_" + imageType, image.getHeight());
-			imageJSONObject.put("width_" + imageType, image.getWidth());
-		}
-		catch (IOException ioe) {
-			throw new SystemException(ioe);
-		}
+		UnicodeProperties extraSettingsProperties =
+			dlFileEntry.getExtraSettingsProperties();
 
-		imageJSONObject.put(
-			"imageURL_" + imageType,
-			DLUtil.getPreviewURL(
-				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
-				false, true));
-		imageJSONObject.put("mimeType", fileEntry.getMimeType());
-		imageJSONObject.put("name", fileEntry.getTitle());
+		JSONObject fileEntryImageJSONObject =
+			JSONFactoryUtil.createJSONObject(
+				extraSettingsProperties.getProperty(
+					"fileEntryImageJSONObject"));
+
+		Iterator<String> iterator = fileEntryImageJSONObject.keys();
+
+		while (iterator.hasNext()) {
+			String key = iterator.next();
+
+			imageJSONObject.put(key, fileEntryImageJSONObject.getString(key));
+		}
 
 		return imageJSONObject;
 	}
@@ -308,7 +319,7 @@ public class AssetEntrySetImageUtil {
 
 	protected static FileEntry addFileEntry(
 			long userId, long classNameId, long classPK, String portletId,
-			File file, String type)
+			File file, String imageType, String originalFileName)
 		throws PortalException, SystemException {
 
 		long groupId = 0;
@@ -325,11 +336,64 @@ public class AssetEntrySetImageUtil {
 			groupId = user.getGroupId();
 		}
 
-		String fileName = System.currentTimeMillis() + type + file.getName();
+		ServiceContext serviceContext = new ServiceContext();
 
-		return PortletFileRepositoryUtil.addPortletFileEntry(
-			groupId, userId, PortalUtil.getClassName(classNameId), classPK,
-			portletId, 0L, file, fileName, null, false);
+		serviceContext.setAddGroupPermissions(false);
+		serviceContext.setAddGuestPermissions(false);
+
+		Repository repository = PortletFileRepositoryUtil.addPortletRepository(
+			groupId, portletId, serviceContext);
+
+		serviceContext.setAttribute(
+			"className", PortalUtil.getClassName(classNameId));
+		serviceContext.setAttribute("classPK", String.valueOf(classPK));
+
+		String fileName =
+			System.currentTimeMillis() + imageType + originalFileName;
+
+		String contentType = MimeTypesUtil.getContentType(fileName);
+
+		FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
+			userId, repository.getRepositoryId(), 0L, fileName, contentType,
+			fileName, originalFileName, StringPool.BLANK, file, serviceContext);
+
+		DLFileEntry dlFileEntry = DLFileEntryLocalServiceUtil.getDLFileEntry(
+			fileEntry.getFileEntryId());
+
+		UnicodeProperties extraSettingsProperties =
+			dlFileEntry.getExtraSettingsProperties();
+
+		JSONObject fileEntryImageJSONObject =
+			JSONFactoryUtil.createJSONObject();
+
+		try {
+			Image image = ImageToolUtil.getImage(
+				DLFileEntryLocalServiceUtil.getFileAsStream(
+					fileEntry.getFileEntryId(), fileEntry.getVersion(), false));
+
+			fileEntryImageJSONObject.put(
+				"height_" + imageType, image.getHeight());
+			fileEntryImageJSONObject.put(
+				"width_" + imageType, image.getWidth());
+		}
+		catch (IOException ioe) {
+			throw new SystemException(ioe);
+		}
+
+		fileEntryImageJSONObject.put(
+			"imageURL_" + imageType,
+			DLUtil.getPreviewURL(
+				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
+				false, true));
+		fileEntryImageJSONObject.put("mimeType", fileEntry.getMimeType());
+		fileEntryImageJSONObject.put("name", fileEntry.getTitle());
+
+		extraSettingsProperties.put(
+			"fileEntryImageJSONObject", fileEntryImageJSONObject.toString());
+
+		DLFileEntryLocalServiceUtil.updateDLFileEntry(dlFileEntry);
+
+		return fileEntry;
 	}
 
 	private static final int _ORIENTATION_MIRROR_HORIZONTAL = 2;
