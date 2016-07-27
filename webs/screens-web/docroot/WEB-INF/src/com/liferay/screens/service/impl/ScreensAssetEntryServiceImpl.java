@@ -50,6 +50,8 @@ import com.liferay.portlet.asset.service.persistence.AssetEntryQuery;
 import com.liferay.portlet.assetpublisher.util.AssetPublisherUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
+import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecord;
 import com.liferay.portlet.dynamicdatamapping.NoSuchStructureException;
@@ -169,13 +171,47 @@ public class ScreensAssetEntryServiceImpl
 		}
 	}
 
+	@Override
+	public JSONObject getFileEntry(long classPK)
+		throws SystemException, PortalException {
+		DLFileEntry dlFileEntry = dlFileEntryService.getFileEntry(classPK);
+
+		JSONObject fileEntryJSONObject = JSONFactoryUtil.createJSONObject();
+
+		DLFileEntryType dlFileEntryType =
+			dlFileEntryTypeService.getFileEntryType(
+				dlFileEntry.getFileEntryTypeId());
+
+		DLFileVersion fileVersion = dlFileEntry.getFileVersion();
+		long fileVersionId = fileVersion.getFileVersionId();
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		for (DDMStructure ddmStructure : dlFileEntryType.getDDMStructures()) {
+			jsonArray.put(JSONFactoryUtil.createJSONObject(
+				JSONFactoryUtil.looseSerialize(ddmStructure)));
+		}
+		fileEntryJSONObject.put("DDMStructures", jsonArray);
+
+		fileEntryJSONObject.put(
+			"DDMFormValues",
+			JSONFactoryUtil.createJSONObject(
+				JSONFactoryUtil.looseSerializeDeep(
+					dlFileEntry.getFieldsMap(fileVersionId))));
+
+		fileEntryJSONObject.put(
+			"fileEntry",
+			JSONFactoryUtil.createJSONObject(
+				JSONFactoryUtil.looseSerialize(dlFileEntry)));
+
+		return fileEntryJSONObject;
+	}
+
 	protected boolean containsPermission(
-			PermissionChecker permissionChecker, AssetEntry assetEntry,
-			String actionId)
-		throws PortalException {
+		PermissionChecker permissionChecker, AssetEntry assetEntry,
+		String actionId) throws PortalException {
 
 		try {
-			return (Boolean)PortalClassInvoker.invoke(
+			return (Boolean) PortalClassInvoker.invoke(
 				false, _containsPermissionMethodKey, permissionChecker,
 				assetEntry, actionId);
 		}
