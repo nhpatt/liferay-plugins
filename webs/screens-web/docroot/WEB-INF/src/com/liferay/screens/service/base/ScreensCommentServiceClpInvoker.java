@@ -24,80 +24,80 @@ import java.util.Arrays;
  */
 public class ScreensCommentServiceClpInvoker {
 	public ScreensCommentServiceClpInvoker() {
-		_methodName46 = "getBeanIdentifier";
+		_methodName52 = "getBeanIdentifier";
 
-		_methodParameterTypes46 = new String[] {  };
+		_methodParameterTypes52 = new String[] {  };
 
-		_methodName47 = "setBeanIdentifier";
+		_methodName53 = "setBeanIdentifier";
 
-		_methodParameterTypes47 = new String[] { "java.lang.String" };
+		_methodParameterTypes53 = new String[] { "java.lang.String" };
 
-		_methodName50 = "addComment";
+		_methodName56 = "addComment";
 
-		_methodParameterTypes50 = new String[] {
+		_methodParameterTypes56 = new String[] {
 				"java.lang.String", "long", "java.lang.String"
 			};
 
-		_methodName51 = "getComment";
+		_methodName58 = "getComment";
 
-		_methodParameterTypes51 = new String[] { "long" };
+		_methodParameterTypes58 = new String[] { "long" };
 
-		_methodName52 = "getComments";
+		_methodName59 = "getComments";
 
-		_methodParameterTypes52 = new String[] {
+		_methodParameterTypes59 = new String[] {
 				"java.lang.String", "long", "int", "int"
 			};
 
-		_methodName53 = "getCommentsCount";
+		_methodName60 = "getCommentsCount";
 
-		_methodParameterTypes53 = new String[] { "java.lang.String", "long" };
+		_methodParameterTypes60 = new String[] { "java.lang.String", "long" };
 
-		_methodName54 = "updateComment";
+		_methodName61 = "updateComment";
 
-		_methodParameterTypes54 = new String[] { "long", "java.lang.String" };
+		_methodParameterTypes61 = new String[] { "long", "java.lang.String" };
 	}
 
 	public Object invokeMethod(String name, String[] parameterTypes,
 		Object[] arguments) throws Throwable {
-		if (_methodName46.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes46, parameterTypes)) {
+		if (_methodName52.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes52, parameterTypes)) {
 			return ScreensCommentServiceUtil.getBeanIdentifier();
 		}
 
-		if (_methodName47.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes47, parameterTypes)) {
+		if (_methodName53.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes53, parameterTypes)) {
 			ScreensCommentServiceUtil.setBeanIdentifier((java.lang.String)arguments[0]);
 
 			return null;
 		}
 
-		if (_methodName50.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes50, parameterTypes)) {
+		if (_methodName56.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes56, parameterTypes)) {
 			return ScreensCommentServiceUtil.addComment((java.lang.String)arguments[0],
 				((Long)arguments[1]).longValue(), (java.lang.String)arguments[2]);
 		}
 
-		if (_methodName51.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes51, parameterTypes)) {
+		if (_methodName58.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes58, parameterTypes)) {
 			return ScreensCommentServiceUtil.getComment(((Long)arguments[0]).longValue());
 		}
 
-		if (_methodName52.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes52, parameterTypes)) {
+		if (_methodName59.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes59, parameterTypes)) {
 			return ScreensCommentServiceUtil.getComments((java.lang.String)arguments[0],
 				((Long)arguments[1]).longValue(),
 				((Integer)arguments[2]).intValue(),
 				((Integer)arguments[3]).intValue());
 		}
 
-		if (_methodName53.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes53, parameterTypes)) {
+		if (_methodName60.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes60, parameterTypes)) {
 			return ScreensCommentServiceUtil.getCommentsCount((java.lang.String)arguments[0],
 				((Long)arguments[1]).longValue());
 		}
 
-		if (_methodName54.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes54, parameterTypes)) {
+		if (_methodName61.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes61, parameterTypes)) {
 			return ScreensCommentServiceUtil.updateComment(((Long)arguments[0]).longValue(),
 				(java.lang.String)arguments[1]);
 		}
@@ -105,18 +105,18 @@ public class ScreensCommentServiceClpInvoker {
 		throw new UnsupportedOperationException();
 	}
 
-	private String _methodName46;
-	private String[] _methodParameterTypes46;
-	private String _methodName47;
-	private String[] _methodParameterTypes47;
-	private String _methodName50;
-	private String[] _methodParameterTypes50;
-	private String _methodName51;
-	private String[] _methodParameterTypes51;
 	private String _methodName52;
 	private String[] _methodParameterTypes52;
 	private String _methodName53;
 	private String[] _methodParameterTypes53;
-	private String _methodName54;
-	private String[] _methodParameterTypes54;
+	private String _methodName56;
+	private String[] _methodParameterTypes56;
+	private String _methodName58;
+	private String[] _methodParameterTypes58;
+	private String _methodName59;
+	private String[] _methodParameterTypes59;
+	private String _methodName60;
+	private String[] _methodParameterTypes60;
+	private String _methodName61;
+	private String[] _methodParameterTypes61;
 }
