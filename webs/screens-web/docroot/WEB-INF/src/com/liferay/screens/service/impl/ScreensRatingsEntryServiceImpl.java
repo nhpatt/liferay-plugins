@@ -42,6 +42,7 @@ import java.util.List;
  */
 public class ScreensRatingsEntryServiceImpl
 	extends ScreensRatingsEntryServiceBaseImpl {
+	public static final int RATING_MAXIMUM = 5;
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -83,17 +84,18 @@ public class ScreensRatingsEntryServiceImpl
 		double userScore = -1;
 
 		for (RatingsEntry ratingsEntry : ratingsEntries) {
-			int index = (int)(ratingsEntry.getScore() * ratingsLength);
+			double score = ratingsEntry.getScore() / RATING_MAXIMUM;
+			int index = (int)(score * ratingsLength);
 
 			if (index == ratingsLength) {
 				index--;
 			}
 
 			ratings[index]++;
-			totalScore += ratingsEntry.getScore();
+			totalScore += score;
 
 			if (ratingsEntry.getUserId() == getUserId()) {
-				userScore = ratingsEntry.getScore();
+				userScore = score;
 			}
 		}
 
