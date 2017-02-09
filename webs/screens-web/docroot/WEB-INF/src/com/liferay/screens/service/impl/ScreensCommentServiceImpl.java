@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ClassResolverUtil;
 import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.PortalClassInvoker;
@@ -65,54 +67,17 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 			className, classPK);
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-		try {
-			PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBDiscussion,
-				getPermissionChecker(),
-				group.getCompanyId(), group.getGroupId(), className, classPK,
-				getUserId(), ActionKeys.ADD_DISCUSSION);
-		}
-		catch (Exception e) {
-//			MBDiscussionPermission.check(
-//				getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
-//				className, classPK, getUserId(), ActionKeys.ADD_DISCUSSION);
-			e.printStackTrace();
-		}
+		checkPermission(
+			_checkPermissionDiscussion,
+			getPermissionChecker(),
+			group.getCompanyId(), group.getGroupId(), className, classPK,
+			getUserId(), ActionKeys.ADD_DISCUSSION);
 
 		MBMessage mbMessage = addComment(
 			getUserId(), getUser().getFullName(), group.getGroupId(), className,
 			classPK, body, new ServiceContext());
 
 		return toJSONObject(mbMessage);
-	}
-
-	private MBMessage addComment(
-		long userId, String fullName, long groupId, String className,
-		long classPK, String body, ServiceContext serviceContext)
-		throws SystemException, PortalException {
-
-		MBMessageDisplay messageDisplay =
-			mbMessageLocalService.getDiscussionMessageDisplay(
-				userId, groupId, className, classPK,
-				WorkflowConstants.STATUS_APPROVED);
-
-		MBThread thread = messageDisplay.getThread();
-
-		List<MBMessage> messages = mbMessageLocalService.getThreadMessages(
-			thread.getThreadId(), WorkflowConstants.STATUS_APPROVED);
-
-		for (MBMessage message : messages) {
-			String messageBody = message.getBody();
-
-			if (messageBody.equals(body)) {
-				throw new SystemException(body);
-			}
-		}
-
-		return mbMessageLocalService.addDiscussionMessage(
-			userId, fullName, groupId, className, classPK,
-			thread.getThreadId(), thread.getRootMessageId(), StringPool.BLANK,
-			body, serviceContext);
 	}
 
 	@Override
@@ -122,27 +87,11 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		MBMessage mbMessage = mbMessageLocalService.getMBMessage(
 			commentId);
 
-		AssetEntry assetEntry = assetEntryLocalService.getEntry(
-			mbMessage.getClassName(), mbMessage.getClassPK());
-
-		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
-
-		try {
-			PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBDiscussionWithMessage,
-				getPermissionChecker(),
-				group.getCompanyId(), group.getGroupId(),
-				assetEntry.getClassName(), assetEntry.getClassPK(), commentId,
-				getUserId(), ActionKeys.ADD_DISCUSSION);
-		}
-		catch (Exception e) {
-//			MBDiscussionPermission.check(getPermissionChecker(),
-//				group.getCompanyId(), group.getGroupId(), assetEntry.getClassName(),
-//				assetEntry.getClassPK(),
-//				commentId, getUserId(),
-//				ActionKeys.VIEW);
-			e.printStackTrace();
-		}
+		checkPermission(
+			_checkPermissionMessage,
+			getPermissionChecker(),
+			commentId,
+			ActionKeys.VIEW);
 
 		return toJSONObject(mbMessage);
 	}
@@ -157,19 +106,11 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-		try {
-			PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBDiscussion,
-				getPermissionChecker(),
-				group.getCompanyId(), group.getGroupId(), className, classPK,
-				getUserId(), ActionKeys.VIEW);
-		}
-		catch (Exception e) {
-//			MBDiscussionPermission.check(
-//			getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
-//				className, classPK, getUserId(), ActionKeys.VIEW);
-			e.printStackTrace();
-		}
+		checkPermission(
+			_checkPermissionDiscussion,
+			getPermissionChecker(),
+			group.getCompanyId(), group.getGroupId(), className, classPK,
+			getUserId(), ActionKeys.VIEW);
 
 
 		List<MBMessage> mbMessages =
@@ -187,7 +128,8 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		return jsonArray;
 
-//		MBDiscussion discussion = mbDiscussionLocalService.getDiscussion(
+// TODO implement? but it isn't consistent with count
+// MBDiscussion discussion = mbDiscussionLocalService.getDiscussion(
 //			className, classPK);
 //
 ////		DiscussionComment rootDiscussionComment =
@@ -239,19 +181,11 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-		try {
-			PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBDiscussion,
-				getPermissionChecker(),
-				group.getCompanyId(), group.getGroupId(), className, classPK,
-				getUserId(), ActionKeys.VIEW);
-		}
-		catch (Exception e) {
-//			MBDiscussionPermission.check(
-//			getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
-//				className, classPK, getUserId(), ActionKeys.VIEW);
-			e.printStackTrace();
-		}
+		checkPermission(
+			_checkPermissionDiscussion,
+			getPermissionChecker(),
+			group.getCompanyId(), group.getGroupId(), className, classPK,
+			getUserId(), ActionKeys.VIEW);
 
 		return mbMessageLocalService.getDiscussionMessagesCount(
 			className, classPK, WorkflowConstants.STATUS_APPROVED);
@@ -261,16 +195,9 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 	public JSONObject updateComment(long commentId, String body)
 		throws PortalException, SystemException {
 
-		try {
-			PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBMessage,
-				commentId, ActionKeys.UPDATE_DISCUSSION);
-		}
-		catch (Exception e) {
-//			MBMessagePermission.check(
-//				getPermissionChecker(), commentId, ActionKeys.UPDATE_DISCUSSION);
-			e.printStackTrace();
-		}
+		checkPermission(
+			_checkPermissionMessage, commentId,
+			ActionKeys.UPDATE_DISCUSSION);
 
 		MBMessage mbMessage = mbMessageLocalService.getMBMessage(commentId);
 
@@ -293,59 +220,94 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		jsonObject.put("body", comment.getBody());
 		jsonObject.put("commentId", comment.getMessageId());
-		jsonObject.put(
-			"createDate", comment.getCreateDate().getTime());
+		jsonObject.put("createDate", comment.getCreateDate().getTime());
 		jsonObject.put("modifiedDate", comment.getModifiedDate().getTime());
 		jsonObject.put("userId", comment.getUserId());
 		jsonObject.put("userName", comment.getUserName());
 
-		try {
-			boolean deletePermission = (Boolean) PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBMessageContains,
-				comment.getMessageId(), ActionKeys.DELETE_DISCUSSION);
-			boolean updatePermission = (Boolean) PortalClassInvoker.invoke(
-				false, _checkPermissionMethodKeyMBMessageContains,
-				comment.getMessageId(), ActionKeys.UPDATE_DISCUSSION);
-			jsonObject.put("updatePermission", updatePermission);
-			jsonObject.put("deletePermission", deletePermission);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		boolean deletePermission = (Boolean) checkPermission(
+			_containsPermissionMessage, getPermissionChecker(),
+			comment.getMessageId(), ActionKeys.DELETE);
+		boolean updatePermission = (Boolean) checkPermission(
+			_containsPermissionMessage, getPermissionChecker(),
+			comment.getMessageId(), ActionKeys.UPDATE);
+		jsonObject.put("updatePermission", updatePermission);
+		jsonObject.put("deletePermission", deletePermission);
 		return jsonObject;
 	}
 
+	protected Object checkPermission(MethodKey methodKey, Object... args)
+		throws PortalException, SystemException {
 
-	private static final MethodKey _checkPermissionMethodKeyMBMessage =
+		try {
+			return PortalClassInvoker.invoke(
+				false, methodKey, args);
+		}
+		catch (PortalException pe) {
+			throw pe;
+		}
+		catch (SystemException se) {
+			throw se;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+		return null;
+	}
+
+	private MBMessage addComment(
+		long userId, String fullName, long groupId, String className,
+		long classPK, String body, ServiceContext serviceContext)
+		throws SystemException, PortalException {
+
+		MBMessageDisplay messageDisplay =
+			mbMessageLocalService.getDiscussionMessageDisplay(
+				userId, groupId, className, classPK,
+				WorkflowConstants.STATUS_APPROVED);
+
+		MBThread thread = messageDisplay.getThread();
+
+		List<MBMessage> messages = mbMessageLocalService.getThreadMessages(
+			thread.getThreadId(), WorkflowConstants.STATUS_APPROVED);
+
+		for (MBMessage message : messages) {
+			String messageBody = message.getBody();
+
+			if (messageBody.equals(body)) {
+				throw new SystemException(body);
+			}
+		}
+
+		return mbMessageLocalService.addDiscussionMessage(
+			userId, fullName, groupId, className, classPK,
+			thread.getThreadId(), thread.getRootMessageId(), StringPool.BLANK,
+			body, serviceContext);
+	}
+
+	private static final MethodKey _checkPermissionMessage =
 		new MethodKey(
 			ClassResolverUtil.resolveByPortalClassLoader(
 				"com.liferay.portlet.messageboards.service.permission." +
 				"MBMessagePermission"),
-			"check", PermissionChecker.class, Long.class, String.class);
+			"check", PermissionChecker.class, long.class, String.class);
 
-	private static final MethodKey _checkPermissionMethodKeyMBMessageContains =
+	private static final MethodKey _containsPermissionMessage =
 		new MethodKey(
 			ClassResolverUtil.resolveByPortalClassLoader(
 				"com.liferay.portlet.messageboards.service.permission." +
 				"MBMessagePermission"),
-			"contains", PermissionChecker.class, Long.class,
+			"contains", PermissionChecker.class, long.class,
 			String.class);
 
-	private static final MethodKey _checkPermissionMethodKeyMBDiscussion =
+	private static final MethodKey _checkPermissionDiscussion =
 		new MethodKey(
 			ClassResolverUtil.resolveByPortalClassLoader(
 				"com.liferay.portlet.messageboards.service.permission." +
 				"MBDiscussionPermission"),
-			"check", PermissionChecker.class, Long.class, Long.class,
-			String.class, Long.class, Long.class, String.class);
+			"check", PermissionChecker.class, long.class, long.class,
+			String.class, long.class, long.class, String.class);
 
-	private static final MethodKey
-		_checkPermissionMethodKeyMBDiscussionWithMessage =
-		new MethodKey(
-			ClassResolverUtil.resolveByPortalClassLoader(
-				"com.liferay.portlet.messageboards.service.permission." +
-				"MBDiscussionPermission"),
-			"check", PermissionChecker.class, Long.class, Long.class,
-			String.class, Long.class, Long.class, Long.class, String.class);
+	private static Log _log = LogFactoryUtil.getLog(
+		ScreensCommentServiceImpl.class);
 
 }
