@@ -14,7 +14,6 @@
 
 package com.liferay.screens.service.impl;
 
-import com.liferay.portal.json.JSONArrayImpl;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -105,14 +104,14 @@ public class ScreensRatingsEntryServiceImpl
 			jsonObject.put("average", 0);
 		}
 
-		JSONArray jsonArray = new JSONArrayImpl();
-		for (int rating : ratings) {
-			jsonArray.put(rating);
-		}
+		//FIXME !
+//		for (int rating : ratings) {
+//			jsonArray.put(rating);
+//		}
 
 		jsonObject.put("className", className);
 		jsonObject.put("classPK", classPK);
-		jsonObject.put("ratings", jsonArray);
+//		jsonObject.put("ratings", jsonArray);
 		jsonObject.put("totalCount", ratingsEntries.size());
 		jsonObject.put("totalScore", totalScore);
 		jsonObject.put("userScore", userScore);
