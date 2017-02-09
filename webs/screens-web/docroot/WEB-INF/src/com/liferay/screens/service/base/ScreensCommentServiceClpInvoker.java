@@ -24,34 +24,59 @@ import java.util.Arrays;
  */
 public class ScreensCommentServiceClpInvoker {
 	public ScreensCommentServiceClpInvoker() {
-		_methodName36 = "getBeanIdentifier";
+		_methodName46 = "getBeanIdentifier";
 
-		_methodParameterTypes36 = new String[] {  };
+		_methodParameterTypes46 = new String[] {  };
 
-		_methodName37 = "setBeanIdentifier";
+		_methodName47 = "setBeanIdentifier";
 
-		_methodParameterTypes37 = new String[] { "java.lang.String" };
+		_methodParameterTypes47 = new String[] { "java.lang.String" };
+
+		_methodName50 = "addComment";
+
+		_methodParameterTypes50 = new String[] {
+				"java.lang.String", "long", "java.lang.String"
+			};
+
+		_methodName51 = "getComment";
+
+		_methodParameterTypes51 = new String[] { "long" };
 	}
 
 	public Object invokeMethod(String name, String[] parameterTypes,
 		Object[] arguments) throws Throwable {
-		if (_methodName36.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes36, parameterTypes)) {
+		if (_methodName46.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes46, parameterTypes)) {
 			return ScreensCommentServiceUtil.getBeanIdentifier();
 		}
 
-		if (_methodName37.equals(name) &&
-				Arrays.deepEquals(_methodParameterTypes37, parameterTypes)) {
+		if (_methodName47.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes47, parameterTypes)) {
 			ScreensCommentServiceUtil.setBeanIdentifier((java.lang.String)arguments[0]);
 
 			return null;
 		}
 
+		if (_methodName50.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes50, parameterTypes)) {
+			return ScreensCommentServiceUtil.addComment((java.lang.String)arguments[0],
+				((Long)arguments[1]).longValue(), (java.lang.String)arguments[2]);
+		}
+
+		if (_methodName51.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes51, parameterTypes)) {
+			return ScreensCommentServiceUtil.getComment(((Long)arguments[0]).longValue());
+		}
+
 		throw new UnsupportedOperationException();
 	}
 
-	private String _methodName36;
-	private String[] _methodParameterTypes36;
-	private String _methodName37;
-	private String[] _methodParameterTypes37;
+	private String _methodName46;
+	private String[] _methodParameterTypes46;
+	private String _methodName47;
+	private String[] _methodParameterTypes47;
+	private String _methodName50;
+	private String[] _methodParameterTypes50;
+	private String _methodName51;
+	private String[] _methodParameterTypes51;
 }

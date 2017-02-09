@@ -22,6 +22,8 @@
 	<entity local-service="false" name="ScreensComment" remote-service="true">
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
+		<reference entity="MBMessage" package-path="com.liferay.portlet.messageboards" />
+		<reference entity="MBDiscussion" package-path="com.liferay.portlet.messageboards"/>
 	</entity>
 	<entity name="ScreensDDLRecord" local-service="false" remote-service="true">
 		<reference package-path="com.liferay.portlet.dynamicdatalists" entity="DDLRecord" />

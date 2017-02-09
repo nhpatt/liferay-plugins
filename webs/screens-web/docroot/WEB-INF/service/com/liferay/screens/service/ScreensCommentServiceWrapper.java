@@ -58,6 +58,21 @@ public class ScreensCommentServiceWrapper implements ScreensCommentService,
 			arguments);
 	}
 
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject addComment(
+		java.lang.String className, long classPK, java.lang.String body)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensCommentService.addComment(className, classPK, body);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject getComment(long commentId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensCommentService.getComment(commentId);
+	}
+
 	/**
 	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedService}
 	 */

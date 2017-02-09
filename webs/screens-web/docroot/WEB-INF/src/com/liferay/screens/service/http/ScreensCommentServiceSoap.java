@@ -14,6 +14,13 @@
 
 package com.liferay.screens.service.http;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
+import com.liferay.screens.service.ScreensCommentServiceUtil;
+
+import java.rmi.RemoteException;
+
 /**
  * Provides the SOAP utility for the
  * {@link com.liferay.screens.service.ScreensCommentServiceUtil} service utility. The
@@ -44,4 +51,34 @@ package com.liferay.screens.service.http;
  * @generated
  */
 public class ScreensCommentServiceSoap {
+	public static java.lang.String addComment(java.lang.String className,
+		long classPK, java.lang.String body) throws RemoteException {
+		try {
+			com.liferay.portal.kernel.json.JSONObject returnValue = ScreensCommentServiceUtil.addComment(className,
+					classPK, body);
+
+			return returnValue.toString();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static java.lang.String getComment(long commentId)
+		throws RemoteException {
+		try {
+			com.liferay.portal.kernel.json.JSONObject returnValue = ScreensCommentServiceUtil.getComment(commentId);
+
+			return returnValue.toString();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	private static Log _log = LogFactoryUtil.getLog(ScreensCommentServiceSoap.class);
 }
