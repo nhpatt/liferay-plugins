@@ -169,6 +169,20 @@ public class ScreensAssetEntryServiceImpl
 		}
 	}
 
+	public JSONObject getAssetEntry(long entryId, Locale locale)
+		throws PortalException, SystemException {
+
+		return toJSONObject(assetEntryLocalService.getEntry(entryId), locale);
+	}
+
+	public JSONObject getAssetEntry(
+		String className, long classPK, Locale locale)
+		throws PortalException, SystemException {
+
+		return toJSONObject(
+			assetEntryLocalService.getEntry(className, classPK), locale);
+	}
+
 	protected boolean containsPermission(
 			PermissionChecker permissionChecker, AssetEntry assetEntry,
 			String actionId)
@@ -350,27 +364,33 @@ public class ScreensAssetEntryServiceImpl
 	}
 
 	protected JSONArray toJSONArray(
-			List<AssetEntry> assetEntries, Locale locale)
+		List<AssetEntry> assetEntries, Locale locale)
 		throws PortalException, SystemException {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		for (AssetEntry assetEntry : assetEntries) {
-			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-				JSONFactoryUtil.looseSerialize(assetEntry));
-
-			jsonObject.put("className", assetEntry.getClassName());
-			jsonObject.put("description", assetEntry.getDescription(locale));
-			jsonObject.put("locale", String.valueOf(locale));
-			jsonObject.put(
-				"object", getAssetObjectJSONObject(assetEntry, locale));
-			jsonObject.put("summary", assetEntry.getSummary(locale));
-			jsonObject.put("title", assetEntry.getTitle(locale));
+			JSONObject jsonObject = toJSONObject(assetEntry, locale);
 
 			jsonArray.put(jsonObject);
 		}
 
 		return jsonArray;
+	}
+
+	protected JSONObject toJSONObject(AssetEntry assetEntry, Locale locale)
+		throws PortalException, SystemException {
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			JSONFactoryUtil.looseSerialize(assetEntry));
+
+		jsonObject.put("className", assetEntry.getClassName());
+		jsonObject.put("description", assetEntry.getDescription(locale));
+		jsonObject.put("locale", String.valueOf(locale));
+		jsonObject.put("object", getAssetObjectJSONObject(assetEntry, locale));
+		jsonObject.put("summary", assetEntry.getSummary(locale));
+		jsonObject.put("title", assetEntry.getTitle(locale));
+		return jsonObject;
 	}
 
 	private static final MethodKey _containsPermissionMethodKey =
