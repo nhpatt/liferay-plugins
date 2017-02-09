@@ -31,6 +31,24 @@ public class ScreensRatingsEntryServiceClpInvoker {
 		_methodName37 = "setBeanIdentifier";
 
 		_methodParameterTypes37 = new String[] { "java.lang.String" };
+
+		_methodName40 = "deleteRatingsEntry";
+
+		_methodParameterTypes40 = new String[] { "long", "java.lang.String", "int" };
+
+		_methodName41 = "getRatingsEntries";
+
+		_methodParameterTypes41 = new String[] { "long", "int" };
+
+		_methodName42 = "getRatingsEntries";
+
+		_methodParameterTypes42 = new String[] { "long", "java.lang.String", "int" };
+
+		_methodName43 = "updateRatingsEntry";
+
+		_methodParameterTypes43 = new String[] {
+				"long", "java.lang.String", "double", "int"
+			};
 	}
 
 	public Object invokeMethod(String name, String[] parameterTypes,
@@ -47,6 +65,34 @@ public class ScreensRatingsEntryServiceClpInvoker {
 			return null;
 		}
 
+		if (_methodName40.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes40, parameterTypes)) {
+			return ScreensRatingsEntryServiceUtil.deleteRatingsEntry(((Long)arguments[0]).longValue(),
+				(java.lang.String)arguments[1],
+				((Integer)arguments[2]).intValue());
+		}
+
+		if (_methodName41.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes41, parameterTypes)) {
+			return ScreensRatingsEntryServiceUtil.getRatingsEntries(((Long)arguments[0]).longValue(),
+				((Integer)arguments[1]).intValue());
+		}
+
+		if (_methodName42.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes42, parameterTypes)) {
+			return ScreensRatingsEntryServiceUtil.getRatingsEntries(((Long)arguments[0]).longValue(),
+				(java.lang.String)arguments[1],
+				((Integer)arguments[2]).intValue());
+		}
+
+		if (_methodName43.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes43, parameterTypes)) {
+			return ScreensRatingsEntryServiceUtil.updateRatingsEntry(((Long)arguments[0]).longValue(),
+				(java.lang.String)arguments[1],
+				((Double)arguments[2]).doubleValue(),
+				((Integer)arguments[3]).intValue());
+		}
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -54,4 +100,12 @@ public class ScreensRatingsEntryServiceClpInvoker {
 	private String[] _methodParameterTypes36;
 	private String _methodName37;
 	private String[] _methodParameterTypes37;
+	private String _methodName40;
+	private String[] _methodParameterTypes40;
+	private String _methodName41;
+	private String[] _methodParameterTypes41;
+	private String _methodName42;
+	private String[] _methodParameterTypes42;
+	private String _methodName43;
+	private String[] _methodParameterTypes43;
 }

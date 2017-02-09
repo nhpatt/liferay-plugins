@@ -63,6 +63,36 @@ public class ScreensRatingsEntryServiceUtil {
 		return getService().invokeMethod(name, parameterTypes, arguments);
 	}
 
+	public static com.liferay.portal.kernel.json.JSONObject deleteRatingsEntry(
+		long classPK, java.lang.String className, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().deleteRatingsEntry(classPK, className, ratingsLength);
+	}
+
+	public static com.liferay.portal.kernel.json.JSONObject getRatingsEntries(
+		long assetEntryId, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getRatingsEntries(assetEntryId, ratingsLength);
+	}
+
+	public static com.liferay.portal.kernel.json.JSONObject getRatingsEntries(
+		long classPK, java.lang.String className, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getRatingsEntries(classPK, className, ratingsLength);
+	}
+
+	public static com.liferay.portal.kernel.json.JSONObject updateRatingsEntry(
+		long classPK, java.lang.String className, double score,
+		int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .updateRatingsEntry(classPK, className, score, ratingsLength);
+	}
+
 	public static void clearService() {
 		_service = null;
 	}

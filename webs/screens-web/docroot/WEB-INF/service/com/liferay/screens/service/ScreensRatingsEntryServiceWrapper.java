@@ -59,6 +59,43 @@ public class ScreensRatingsEntryServiceWrapper
 			arguments);
 	}
 
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject deleteRatingsEntry(
+		long classPK, java.lang.String className, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensRatingsEntryService.deleteRatingsEntry(classPK,
+			className, ratingsLength);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject getRatingsEntries(
+		long assetEntryId, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensRatingsEntryService.getRatingsEntries(assetEntryId,
+			ratingsLength);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject getRatingsEntries(
+		long classPK, java.lang.String className, int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensRatingsEntryService.getRatingsEntries(classPK,
+			className, ratingsLength);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.json.JSONObject updateRatingsEntry(
+		long classPK, java.lang.String className, double score,
+		int ratingsLength)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _screensRatingsEntryService.updateRatingsEntry(classPK,
+			className, score, ratingsLength);
+	}
+
 	/**
 	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedService}
 	 */
