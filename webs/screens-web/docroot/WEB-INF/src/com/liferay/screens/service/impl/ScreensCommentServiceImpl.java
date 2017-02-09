@@ -21,11 +21,15 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.messageboards.model.MBDiscussion;
 import com.liferay.portlet.messageboards.model.MBMessage;
+import com.liferay.portlet.messageboards.service.permission.MBDiscussionPermission;
+import com.liferay.portlet.messageboards.service.permission.MBMessagePermission;
 import com.liferay.screens.service.base.ScreensCommentServiceBaseImpl;
 
 /**
@@ -53,36 +57,25 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 	public JSONObject addComment(String className, long classPK, String body)
 		throws PortalException, SystemException {
 
-		//FIXME permissions
-//		DiscussionPermission discussionPermission =
-//			commentManager.getDiscussionPermission(getPermissionChecker());
-
 		AssetEntry assetEntry = assetEntryLocalService.getEntry(
 			className, classPK);
-
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-//		discussionPermission.checkAddPermission(
-//			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
+		MBDiscussionPermission.check(
+			getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
+			className, classPK, getUserId(), ActionKeys.ADD_DISCUSSION);
 
-		//FIXME permissions
+		MBMessage mbMessage = mbMessageLocalService.addDiscussionMessage(
+			getUserId(), getUser().getFullName(), group.getGroupId(), className,
+			classPK, 0L, 0L,
+			StringPool.BLANK, body, new ServiceContext());
 
-		ServiceContext serviceContext = new ServiceContext();
-		//FIXME serviceContext.setWorkflowAction("");
-
-		MBMessage mbMessage = mbMessageLocalService.addMessage(
-			getUserId(), getUser().getFullName(), 0L,
-			StringPool.BLANK, body, serviceContext);
-
-		//FIXME toJSONObject(comment, discussionPermission);
 		return toJSONObject(mbMessage);
 	}
 
 	@Override
 	public JSONObject getComment(long commentId)
 		throws PortalException, SystemException {
-//		DiscussionPermission discussionPermission =
-//			commentManager.getDiscussionPermission(getPermissionChecker());
 
 		MBMessage mbMessage = mbMessageLocalService.getMBMessage(
 			commentId);
@@ -92,11 +85,12 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-//		discussionPermission.checkViewPermission(
-//			group.getCompanyId(), assetEntry.getGroupId(),
-//			comment.getClassName(), comment.getClassPK());
+		MBDiscussionPermission.check(getPermissionChecker(),
+			group.getCompanyId(), group.getGroupId(), assetEntry.getClassName(),
+			assetEntry.getClassPK(),
+			commentId, getUserId(),
+			ActionKeys.VIEW);
 
-		//FIXME toJSONObject(comment, discussionPermission);
 		return toJSONObject(mbMessage);
 	}
 
@@ -105,16 +99,14 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		String className, long classPK, int start, int end)
 		throws PortalException, SystemException {
 
-//		DiscussionPermission discussionPermission =
-//			commentManager.getDiscussionPermission(getPermissionChecker());
-
 		AssetEntry assetEntry = assetEntryLocalService.getEntry(
 			className, classPK);
 
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-//		discussionPermission.checkViewPermission(
-//			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
+		MBDiscussionPermission.check(
+			getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
+			className, classPK, getUserId(), ActionKeys.VIEW);
 
 		MBDiscussion discussion = mbDiscussionLocalService.getDiscussion(
 			className, classPK);
@@ -163,54 +155,42 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 	public int getCommentsCount(String className, long classPK)
 		throws PortalException, SystemException {
 
-//		DiscussionPermission discussionPermission =
-//			commentManager.getDiscussionPermission(getPermissionChecker());
-
 		AssetEntry assetEntry = assetEntryLocalService.getEntry(
 			className, classPK);
 
 		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
 
-//		discussionPermission.checkViewPermission(
-//			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
-
-		//FIXME status?
+		MBDiscussionPermission.check(
+			getPermissionChecker(), group.getCompanyId(), group.getGroupId(),
+			className, classPK, getUserId(), ActionKeys.VIEW);
 
 		return mbMessageLocalService.getDiscussionMessagesCount(
-			className, classPK, 0);
+			className, classPK, WorkflowConstants.STATUS_ANY);
 	}
 
 	@Override
 	public JSONObject updateComment(long commentId, String body)
 		throws PortalException, SystemException {
 
-//		DiscussionPermission discussionPermission =
-//			commentManager.getDiscussionPermission(getPermissionChecker());
-
-//		discussionPermission.checkUpdatePermission(commentId);
+		MBMessagePermission.check(
+			getPermissionChecker(), commentId, ActionKeys.UPDATE_DISCUSSION);
 
 		MBMessage mbMessage = mbMessageLocalService.getMBMessage(commentId);
 
-//		createServiceContextFunction(WorkflowConstants.ACTION_PUBLISH)
+		ServiceContext serviceContext = new ServiceContext();
+		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
 
 		mbMessage = mbMessageLocalService.updateDiscussionMessage(
 			mbMessage.getMessageId(),
 			getUserId(), mbMessage.getClassName(), mbMessage.getClassPK(),
 			StringPool.BLANK, body,
-			new ServiceContext());
+			serviceContext);
 
-		return toJSONObject(mbMessage
-//			, discussionPermission
-		);
+		return toJSONObject(mbMessage);
 	}
 
-	//
-//
-	protected JSONObject toJSONObject(
-		MBMessage comment
-//		, DiscussionPermission discussionPermission
-	)
-		throws PortalException {
+	protected JSONObject toJSONObject(MBMessage comment)
+		throws PortalException, SystemException {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
@@ -218,14 +198,16 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		jsonObject.put("commentId", comment.getMessageId());
 		jsonObject.put(
 			"createDate", comment.getCreateDate().getTime());
-//		jsonObject.put(
-//			"deletePermission",
-//			MBMessagePermission.hasDeletePermission(comment.getMessageId()));
+		jsonObject.put(
+			"deletePermission",
+			MBMessagePermission.contains(getPermissionChecker(),
+				comment.getMessageId(), ActionKeys.DELETE_DISCUSSION));
 		jsonObject.put(
 			"modifiedDate", comment.getModifiedDate().getTime());
-//		jsonObject.put(
-//			"updatePermission",
-//			discussionPermission.hasUpdatePermission(comment.getMessageId()));
+		jsonObject.put(
+			"updatePermission",
+			MBMessagePermission.contains(getPermissionChecker(),
+				comment.getMessageId(), ActionKeys.UPDATE_DISCUSSION));
 		jsonObject.put("userId", comment.getUserId());
 		jsonObject.put("userName", comment.getUserName());
 
