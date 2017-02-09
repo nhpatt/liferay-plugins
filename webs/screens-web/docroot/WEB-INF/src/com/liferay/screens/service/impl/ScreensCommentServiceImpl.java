@@ -88,9 +88,7 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 			commentId);
 
 		checkPermission(
-			_checkPermissionMessage,
-			getPermissionChecker(),
-			commentId,
+			_checkPermissionMessage, getPermissionChecker(), commentId,
 			ActionKeys.VIEW);
 
 		return toJSONObject(mbMessage);

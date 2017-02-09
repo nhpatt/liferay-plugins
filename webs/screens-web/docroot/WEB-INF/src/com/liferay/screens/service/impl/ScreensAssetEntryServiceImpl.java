@@ -72,7 +72,6 @@ import javax.portlet.PortletPreferences;
 public class ScreensAssetEntryServiceImpl
 	extends ScreensAssetEntryServiceBaseImpl {
 
-	//FIXME permissions!
 	@Override
 	public JSONArray getAssetEntries(
 			AssetEntryQuery assetEntryQuery, Locale locale)
