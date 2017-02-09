@@ -77,6 +77,26 @@ public class ScreensCommentServiceUtil {
 		return getService().getComment(commentId);
 	}
 
+	public static com.liferay.portal.kernel.json.JSONArray getComments(
+		java.lang.String className, long classPK, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getComments(className, classPK, start, end);
+	}
+
+	public static int getCommentsCount(java.lang.String className, long classPK)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getCommentsCount(className, classPK);
+	}
+
+	public static com.liferay.portal.kernel.json.JSONObject updateComment(
+		long commentId, java.lang.String body)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().updateComment(commentId, body);
+	}
+
 	public static void clearService() {
 		_service = null;
 	}

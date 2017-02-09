@@ -80,5 +80,50 @@ public class ScreensCommentServiceSoap {
 		}
 	}
 
+	public static java.lang.String getComments(java.lang.String className,
+		long classPK, int start, int end) throws RemoteException {
+		try {
+			com.liferay.portal.kernel.json.JSONArray returnValue = ScreensCommentServiceUtil.getComments(className,
+					classPK, start, end);
+
+			return returnValue.toString();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static int getCommentsCount(java.lang.String className, long classPK)
+		throws RemoteException {
+		try {
+			int returnValue = ScreensCommentServiceUtil.getCommentsCount(className,
+					classPK);
+
+			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static java.lang.String updateComment(long commentId,
+		java.lang.String body) throws RemoteException {
+		try {
+			com.liferay.portal.kernel.json.JSONObject returnValue = ScreensCommentServiceUtil.updateComment(commentId,
+					body);
+
+			return returnValue.toString();
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	private static Log _log = LogFactoryUtil.getLog(ScreensCommentServiceSoap.class);
 }

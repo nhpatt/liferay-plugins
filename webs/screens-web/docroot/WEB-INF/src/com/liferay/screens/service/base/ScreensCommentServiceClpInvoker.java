@@ -41,6 +41,20 @@ public class ScreensCommentServiceClpInvoker {
 		_methodName51 = "getComment";
 
 		_methodParameterTypes51 = new String[] { "long" };
+
+		_methodName52 = "getComments";
+
+		_methodParameterTypes52 = new String[] {
+				"java.lang.String", "long", "int", "int"
+			};
+
+		_methodName53 = "getCommentsCount";
+
+		_methodParameterTypes53 = new String[] { "java.lang.String", "long" };
+
+		_methodName54 = "updateComment";
+
+		_methodParameterTypes54 = new String[] { "long", "java.lang.String" };
 	}
 
 	public Object invokeMethod(String name, String[] parameterTypes,
@@ -68,6 +82,26 @@ public class ScreensCommentServiceClpInvoker {
 			return ScreensCommentServiceUtil.getComment(((Long)arguments[0]).longValue());
 		}
 
+		if (_methodName52.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes52, parameterTypes)) {
+			return ScreensCommentServiceUtil.getComments((java.lang.String)arguments[0],
+				((Long)arguments[1]).longValue(),
+				((Integer)arguments[2]).intValue(),
+				((Integer)arguments[3]).intValue());
+		}
+
+		if (_methodName53.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes53, parameterTypes)) {
+			return ScreensCommentServiceUtil.getCommentsCount((java.lang.String)arguments[0],
+				((Long)arguments[1]).longValue());
+		}
+
+		if (_methodName54.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes54, parameterTypes)) {
+			return ScreensCommentServiceUtil.updateComment(((Long)arguments[0]).longValue(),
+				(java.lang.String)arguments[1]);
+		}
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -79,4 +113,10 @@ public class ScreensCommentServiceClpInvoker {
 	private String[] _methodParameterTypes50;
 	private String _methodName51;
 	private String[] _methodParameterTypes51;
+	private String _methodName52;
+	private String[] _methodParameterTypes52;
+	private String _methodName53;
+	private String[] _methodParameterTypes53;
+	private String _methodName54;
+	private String[] _methodParameterTypes54;
 }
