@@ -104,14 +104,14 @@ public class ScreensRatingsEntryServiceImpl
 			jsonObject.put("average", 0);
 		}
 
-		//FIXME !
-//		for (int rating : ratings) {
-//			jsonArray.put(rating);
-//		}
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+		for (int rating : ratings) {
+			jsonArray.put(rating);
+		}
 
 		jsonObject.put("className", className);
 		jsonObject.put("classPK", classPK);
-//		jsonObject.put("ratings", jsonArray);
+		jsonObject.put("ratings", jsonArray);
 		jsonObject.put("totalCount", ratingsEntries.size());
 		jsonObject.put("totalScore", totalScore);
 		jsonObject.put("userScore", userScore);
