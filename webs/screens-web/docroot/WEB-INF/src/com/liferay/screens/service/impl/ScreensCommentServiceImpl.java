@@ -14,14 +14,17 @@
 
 package com.liferay.screens.service.impl;
 
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.asset.model.AssetEntry;
+import com.liferay.portlet.messageboards.model.MBDiscussion;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.screens.service.base.ScreensCommentServiceBaseImpl;
 
@@ -97,39 +100,38 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		return toJSONObject(mbMessage);
 	}
 
-	//	@Override
-//	public JSONArray getComments(
-//		String className, long classPK, int start, int end)
-//		throws PortalException {
-//
+	@Override
+	public JSONArray getComments(
+		String className, long classPK, int start, int end)
+		throws PortalException, SystemException {
+
 //		DiscussionPermission discussionPermission =
 //			commentManager.getDiscussionPermission(getPermissionChecker());
-//
-//		AssetEntry assetEntry = assetEntryLocalService.getEntry(
-//			className, classPK);
-//
-//		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
-//
+
+		AssetEntry assetEntry = assetEntryLocalService.getEntry(
+			className, classPK);
+
+		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
+
 //		discussionPermission.checkViewPermission(
 //			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
-//
-//		Discussion discussion = commentManager.getDiscussion(
-//			getUserId(), assetEntry.getGroupId(), className, classPK,
-//			createServiceContextFunction());
-//
+
+		MBDiscussion discussion = mbDiscussionLocalService.getDiscussion(
+			className, classPK);
+
 //		DiscussionComment rootDiscussionComment =
 //			discussion.getRootDiscussionComment();
-//
-//		if (start == QueryUtil.ALL_POS) {
-//			start = 0;
-//		}
-//
+
+		if (start == QueryUtil.ALL_POS) {
+			start = 0;
+		}
+
 //		DiscussionCommentIterator threadDiscussionCommentIterator =
 //			rootDiscussionComment.getThreadDiscussionCommentIterator(start);
 //
-//		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
-//
-//		if (end == QueryUtil.ALL_POS) {
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		if (end == QueryUtil.ALL_POS) {
 //			while (threadDiscussionCommentIterator.hasNext()) {
 //				JSONObject jsonObject = toJSONObject(
 //					threadDiscussionCommentIterator.next(),
@@ -137,8 +139,8 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 //
 //				jsonArray.put(jsonObject);
 //			}
-//		}
-//		else {
+		}
+		else {
 //			int commentsCount = end - start;
 //
 //			while (threadDiscussionCommentIterator.hasNext() &&
@@ -152,50 +154,57 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 //
 //				commentsCount--;
 //			}
-//		}
-//
-//		return jsonArray;
-//	}
-//
-//	@Override
-//	public int getCommentsCount(String className, long classPK)
-//		throws PortalException, SystemException {
-//
-////		DiscussionPermission discussionPermission =
-////			commentManager.getDiscussionPermission(getPermissionChecker());
-//
-//		AssetEntry assetEntry = assetEntryLocalService.getEntry(
-//			className, classPK);
-//
-//		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
-//
-////		discussionPermission.checkViewPermission(
-////			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
-//
-//		return mbMessageLocalService.getMe.getCommentsCount(className, classPK);
-//	}
-//
-//	@Override
-//	public JSONObject updateComment(long commentId, String body)
-//		throws PortalException {
-//
+		}
+
+		return jsonArray;
+	}
+
+	@Override
+	public int getCommentsCount(String className, long classPK)
+		throws PortalException, SystemException {
+
 //		DiscussionPermission discussionPermission =
 //			commentManager.getDiscussionPermission(getPermissionChecker());
-//
+
+		AssetEntry assetEntry = assetEntryLocalService.getEntry(
+			className, classPK);
+
+		Group group = groupLocalService.getGroup(assetEntry.getGroupId());
+
+//		discussionPermission.checkViewPermission(
+//			group.getCompanyId(), assetEntry.getGroupId(), className, classPK);
+
+		//FIXME status?
+
+		return mbMessageLocalService.getDiscussionMessagesCount(
+			className, classPK, 0);
+	}
+
+	@Override
+	public JSONObject updateComment(long commentId, String body)
+		throws PortalException, SystemException {
+
+//		DiscussionPermission discussionPermission =
+//			commentManager.getDiscussionPermission(getPermissionChecker());
+
 //		discussionPermission.checkUpdatePermission(commentId);
-//
-//		Comment comment = commentManager.fetchComment(commentId);
-//
-//		commentManager.updateComment(
-//			getUserId(), comment.getClassName(), comment.getClassPK(),
-//			commentId, StringPool.BLANK, body,
-//			createServiceContextFunction(WorkflowConstants.ACTION_PUBLISH));
-//
-//		comment = commentManager.fetchComment(commentId);
-//
-//		return toJSONObject(comment, discussionPermission);
-//	}
-//
+
+		MBMessage mbMessage = mbMessageLocalService.getMBMessage(commentId);
+
+//		createServiceContextFunction(WorkflowConstants.ACTION_PUBLISH)
+
+		mbMessage = mbMessageLocalService.updateDiscussionMessage(
+			mbMessage.getMessageId(),
+			getUserId(), mbMessage.getClassName(), mbMessage.getClassPK(),
+			StringPool.BLANK, body,
+			new ServiceContext());
+
+		return toJSONObject(mbMessage
+//			, discussionPermission
+		);
+	}
+
+	//
 //
 	protected JSONObject toJSONObject(
 		MBMessage comment
@@ -222,7 +231,4 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 
 		return jsonObject;
 	}
-//
-//	@ServiceReference(type = CommentManager.class)
-//	protected CommentManager commentManager;
 }
