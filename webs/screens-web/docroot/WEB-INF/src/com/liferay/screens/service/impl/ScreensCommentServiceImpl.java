@@ -34,6 +34,7 @@ import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBMessageDisplay;
 import com.liferay.portlet.messageboards.model.MBThread;
+import com.liferay.portlet.messageboards.util.comparator.MessageCreateDateComparator;
 import com.liferay.screens.service.base.ScreensCommentServiceBaseImpl;
 
 import java.util.List;
@@ -116,7 +117,7 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 				getUserId(), classNameLocalService.getClassNameId(className),
 				classPK, WorkflowConstants.STATUS_APPROVED,
 				start, end,
-				null);
+				new MessageCreateDateComparator(false));
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
