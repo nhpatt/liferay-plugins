@@ -195,8 +195,8 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		checkPermission(
-			_checkPermissionMessage, commentId,
-			ActionKeys.UPDATE_DISCUSSION);
+			_checkPermissionMessage, getPermissionChecker(), commentId,
+			ActionKeys.UPDATE);
 
 		MBMessage mbMessage = mbMessageLocalService.getMBMessage(commentId);
 
