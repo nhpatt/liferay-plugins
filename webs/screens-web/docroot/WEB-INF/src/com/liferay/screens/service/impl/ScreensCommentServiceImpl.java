@@ -204,10 +204,8 @@ public class ScreensCommentServiceImpl extends ScreensCommentServiceBaseImpl {
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
 
 		mbMessage = mbMessageLocalService.updateDiscussionMessage(
-			mbMessage.getMessageId(),
-			getUserId(), mbMessage.getClassName(), mbMessage.getClassPK(),
-			StringPool.BLANK, body,
-			serviceContext);
+			getUserId(), mbMessage.getMessageId(), mbMessage.getClassName(),
+			mbMessage.getClassPK(), StringPool.BLANK, body, serviceContext);
 
 		return toJSONObject(mbMessage);
 	}
