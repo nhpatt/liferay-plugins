@@ -172,12 +172,10 @@ public class ScreensAssetEntryServiceImpl
 	public JSONObject getAssetEntry(long entryId, Locale locale)
 		throws PortalException, SystemException {
 
-
 		AssetEntry entry = assetEntryLocalService.getEntry(entryId);
-		if (containsPermission(
-			getPermissionChecker(), entry, ActionKeys.VIEW)) {
 
-		}
+        checkPermission(getPermissionChecker(), entry, ActionKeys.VIEW);
+
 		return toJSONObject(entry, locale);
 	}
 
@@ -185,8 +183,11 @@ public class ScreensAssetEntryServiceImpl
 		String className, long classPK, Locale locale)
 		throws PortalException, SystemException {
 
-		return toJSONObject(
-			assetEntryLocalService.getEntry(className, classPK), locale);
+        AssetEntry entry = assetEntryLocalService.getEntry(className, classPK);
+
+        checkPermission(getPermissionChecker(), entry, ActionKeys.VIEW);
+
+		return toJSONObject(entry, locale);
 	}
 
 	protected boolean containsPermission(
@@ -208,6 +209,26 @@ public class ScreensAssetEntryServiceImpl
 
 		return false;
 	}
+
+    protected Object checkPermission(
+            PermissionChecker permissionChecker, AssetEntry assetEntry,
+            String actionId)
+            throws PortalException {
+
+        try {
+            return PortalClassInvoker.invoke(
+                    false, _checkPermissionMethodKey, permissionChecker,
+                    assetEntry, actionId);
+        }
+        catch (PortalException pe) {
+            throw pe;
+        }
+        catch (Exception e) {
+            _log.error(e, e);
+        }
+
+        return null;
+    }
 
 	protected List<AssetEntry> filterAssetEntries(List<AssetEntry> assetEntries)
 		throws PortalException {
