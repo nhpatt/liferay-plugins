@@ -74,7 +74,7 @@ public class ScreensAssetEntryServiceImpl
 
 	@Override
 	public JSONArray getAssetEntries(
-			AssetEntryQuery assetEntryQuery, Locale locale)
+            AssetEntryQuery assetEntryQuery, Locale locale)
 		throws PortalException, SystemException {
 
 		List<AssetEntry> assetEntries = assetEntryService.getEntries(
@@ -195,19 +195,8 @@ public class ScreensAssetEntryServiceImpl
 			String actionId)
 		throws PortalException {
 
-		try {
-			return (Boolean)PortalClassInvoker.invoke(
-				false, _containsPermissionMethodKey, permissionChecker,
-				assetEntry, actionId);
-		}
-		catch (PortalException pe) {
-			throw pe;
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
-		return false;
+		return (Boolean) invokeMethodForPermissions(_containsPermissionMethodKey, permissionChecker,
+                assetEntry, actionId);
 	}
 
     protected Object checkPermission(
@@ -215,9 +204,15 @@ public class ScreensAssetEntryServiceImpl
             String actionId)
             throws PortalException {
 
+        return invokeMethodForPermissions(_checkPermissionMethodKey, permissionChecker,
+                assetEntry, actionId);
+    }
+
+    private Object invokeMethodForPermissions(MethodKey methodKey, PermissionChecker permissionChecker,
+            AssetEntry assetEntry, String actionId) {
         try {
             return PortalClassInvoker.invoke(
-                    false, _checkPermissionMethodKey, permissionChecker,
+                    false, methodKey, permissionChecker,
                     assetEntry, actionId);
         }
         catch (PortalException pe) {
@@ -226,8 +221,6 @@ public class ScreensAssetEntryServiceImpl
         catch (Exception e) {
             _log.error(e, e);
         }
-
-        return null;
     }
 
 	protected List<AssetEntry> filterAssetEntries(List<AssetEntry> assetEntries)
