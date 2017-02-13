@@ -172,7 +172,13 @@ public class ScreensAssetEntryServiceImpl
 	public JSONObject getAssetEntry(long entryId, Locale locale)
 		throws PortalException, SystemException {
 
-		return toJSONObject(assetEntryLocalService.getEntry(entryId), locale);
+
+		AssetEntry entry = assetEntryLocalService.getEntry(entryId);
+		if (containsPermission(
+			getPermissionChecker(), entry, ActionKeys.VIEW)) {
+
+		}
+		return toJSONObject(entry, locale);
 	}
 
 	public JSONObject getAssetEntry(
@@ -392,6 +398,14 @@ public class ScreensAssetEntryServiceImpl
 		jsonObject.put("title", assetEntry.getTitle(locale));
 		return jsonObject;
 	}
+
+	private static final MethodKey _checkPermissionMethodKey =
+		new MethodKey(
+			ClassResolverUtil.resolveByPortalClassLoader(
+				"com.liferay.portlet.asset.service.permission." +
+				"AssetEntryPermission"),
+			"check", PermissionChecker.class, AssetEntry.class,
+			String.class);
 
 	private static final MethodKey _containsPermissionMethodKey =
 		new MethodKey(
