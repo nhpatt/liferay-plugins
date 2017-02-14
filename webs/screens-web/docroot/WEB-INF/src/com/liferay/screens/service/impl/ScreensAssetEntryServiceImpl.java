@@ -181,7 +181,7 @@ public class ScreensAssetEntryServiceImpl
 		String className, long classPK, Locale locale)
 		throws PortalException, SystemException {
 
-        checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(), null, null, className, classPK, ActionKeys.VIEW);
+        checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(), null, 0, className, classPK, ActionKeys.VIEW);
 
 		return toJSONObject(assetEntryLocalService.getEntry(className, classPK), locale);
 	}
@@ -195,7 +195,7 @@ public class ScreensAssetEntryServiceImpl
                 return PortalClassInvoker.invoke(methodKey,
                         permissionChecker, assetEntry, actionId);
             }
-            else if (entryId != null) {
+            else if (entryId != 0) {
                 return PortalClassInvoker.invoke(methodKey,
                         permissionChecker, entryId, actionId);
             }
@@ -223,7 +223,7 @@ public class ScreensAssetEntryServiceImpl
 
 		for (AssetEntry assetEntry : assetEntries) {
 			if (checkPermission(_containsPermissionMethodKey,
-					getPermissionChecker(), assetEntry, null, null, null, ActionKeys.VIEW)) {
+					getPermissionChecker(), assetEntry, 0, null, null, ActionKeys.VIEW)) {
 
 				filteredAssetEntries.add(assetEntry);
 			}
