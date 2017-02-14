@@ -172,7 +172,7 @@ public class ScreensAssetEntryServiceImpl
 	public JSONObject getAssetEntry(long entryId, Locale locale)
 		throws PortalException, SystemException {
 
-        checkPermission(getPermissionChecker(), entryId, null, null, ActionKeys.VIEW);
+        checkPermission(_checkPermissionMethodKeyEntryId, getPermissionChecker(), null, entryId, null, null, ActionKeys.VIEW);
 
 		return toJSONObject(assetEntryLocalService.getEntry(entryId), locale);
 	}
@@ -181,42 +181,28 @@ public class ScreensAssetEntryServiceImpl
 		String className, long classPK, Locale locale)
 		throws PortalException, SystemException {
 
-        checkPermission(getPermissionChecker(), null, className, classPK, ActionKeys.VIEW);
+        checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(), null, null, className, classPK, ActionKeys.VIEW);
 
 		return toJSONObject(assetEntryLocalService.getEntry(className, classPK), locale);
 	}
 
-	protected boolean containsPermission(
-			PermissionChecker permissionChecker, AssetEntry assetEntry,
-			String actionId)
-		throws PortalException {
-
-        try {
-            return (Boolean) PortalClassInvoker.invoke(_containsPermissionMethodKey,
-                    permissionChecker, assetEntry, actionId);
-        }
-        catch (PortalException pe) {
-            throw pe;
-        }
-        catch (Exception e) {
-            _log.error(e, e);
-        }
-
-        return false;
-	}
-
-    protected Object checkPermission(
-            PermissionChecker permissionChecker, long entryId, String className, long classPK,
-            String actionId)
+    protected Object checkPermission(MethodKey methodKey, PermissionChecker permissionChecker,
+            AssetEntry assetEntry, long entryId, String className, long classPK, String actionId)
             throws PortalException {
 
         try {
-            if (entryId != null) {
-                return PortalClassInvoker.invoke(_checkPermissionMethodKeyEntryId,
+            if (assetEntry != null) {
+                return PortalClassInvoker.invoke(methodKey,
+                        permissionChecker, assetEntry, actionId);
+            }
+            else if (entryId != null) {
+                return PortalClassInvoker.invoke(methodKey,
                         permissionChecker, entryId, actionId);
             }
-            return PortalClassInvoker.invoke(_checkPermissionMethodKeyClassNameClassPK,
-                    permissionChecker, className, classPK, actionId);
+            else {
+                return PortalClassInvoker.invoke(methodKey,
+                        permissionChecker, className, classPK, actionId);
+            }
 
         }
         catch (PortalException pe) {
@@ -236,8 +222,8 @@ public class ScreensAssetEntryServiceImpl
 			assetEntries.size());
 
 		for (AssetEntry assetEntry : assetEntries) {
-			if (containsPermission(
-					getPermissionChecker(), assetEntry, ActionKeys.VIEW)) {
+			if (checkPermission(_containsPermissionMethodKey,
+					getPermissionChecker(), assetEntry, null, null, null, ActionKeys.VIEW)) {
 
 				filteredAssetEntries.add(assetEntry);
 			}
