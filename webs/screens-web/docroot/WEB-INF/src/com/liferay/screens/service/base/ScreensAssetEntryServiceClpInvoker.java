@@ -44,6 +44,16 @@ public class ScreensAssetEntryServiceClpInvoker {
 		_methodParameterTypes83 = new String[] {
 				"long", "long", "java.lang.String", "java.util.Locale", "int"
 			};
+
+		_methodName84 = "getAssetEntry";
+
+		_methodParameterTypes84 = new String[] { "long", "java.util.Locale" };
+
+		_methodName85 = "getAssetEntry";
+
+		_methodParameterTypes85 = new String[] {
+				"java.lang.String", "long", "java.util.Locale"
+			};
 	}
 
 	public Object invokeMethod(String name, String[] parameterTypes,
@@ -74,6 +84,18 @@ public class ScreensAssetEntryServiceClpInvoker {
 				((Integer)arguments[4]).intValue());
 		}
 
+		if (_methodName84.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes84, parameterTypes)) {
+			return ScreensAssetEntryServiceUtil.getAssetEntry(((Long)arguments[0]).longValue(),
+				(java.util.Locale)arguments[1]);
+		}
+
+		if (_methodName85.equals(name) &&
+				Arrays.deepEquals(_methodParameterTypes85, parameterTypes)) {
+			return ScreensAssetEntryServiceUtil.getAssetEntry((java.lang.String)arguments[0],
+				((Long)arguments[1]).longValue(), (java.util.Locale)arguments[2]);
+		}
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -85,4 +107,8 @@ public class ScreensAssetEntryServiceClpInvoker {
 	private String[] _methodParameterTypes82;
 	private String _methodName83;
 	private String[] _methodParameterTypes83;
+	private String _methodName84;
+	private String[] _methodParameterTypes84;
+	private String _methodName85;
+	private String[] _methodParameterTypes85;
 }
