@@ -48,6 +48,7 @@ import java.util.List;
  */
 public class ScreensRatingsEntryServiceImpl
 	extends ScreensRatingsEntryServiceBaseImpl {
+
 	public static final int RATING_MAXIMUM = 5;
 
 	/**
@@ -59,10 +60,11 @@ public class ScreensRatingsEntryServiceImpl
 	@Override
 	public JSONObject deleteRatingsEntry(
 		long classPK, String className, int ratingsLength)
-		throws PortalException, SystemException {
+			throws PortalException, SystemException {
 
-		checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(),
-				className, classPK, ActionKeys.DELETE);
+		checkPermission(
+			_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(),
+			className, classPK, ActionKeys.DELETE);
 
 		ratingsEntryLocalService.deleteEntry(getUserId(), className, classPK);
 
@@ -73,8 +75,9 @@ public class ScreensRatingsEntryServiceImpl
 	public JSONObject getRatingsEntries(long assetEntryId, int ratingsLength)
 		throws PortalException, SystemException {
 
-		checkPermission(_checkPermissionMethodKeyEntryId, getPermissionChecker(),
-				assetEntryId, ActionKeys.VIEW);
+		checkPermission(
+			_checkPermissionMethodKeyEntryId, getPermissionChecker(),
+			assetEntryId, ActionKeys.VIEW);
 
 		AssetEntry entry = assetEntryLocalService.fetchEntry(assetEntryId);
 
@@ -85,7 +88,7 @@ public class ScreensRatingsEntryServiceImpl
 	@Override
 	public JSONObject getRatingsEntries(
 		long classPK, String className, int ratingsLength)
-		throws PortalException, SystemException {
+			throws PortalException, SystemException {
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
@@ -138,10 +141,11 @@ public class ScreensRatingsEntryServiceImpl
 	@Override
 	public JSONObject updateRatingsEntry(
 		long classPK, String className, double score, int ratingsLength)
-		throws PortalException, SystemException {
+			throws PortalException, SystemException {
 
-		checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(),
-				className, classPK, ActionKeys.UPDATE);
+		checkPermission(
+				_checkPermissionMethodKeyClassNameClassPK,
+				getPermissionChecker(), className, classPK, ActionKeys.UPDATE);
 
 		ratingsEntryLocalService.updateEntry(
 				getUserId(), className, classPK, score, new ServiceContext());
@@ -149,9 +153,9 @@ public class ScreensRatingsEntryServiceImpl
 		return getRatingsEntries(classPK, className, ratingsLength);
 	}
 
-	protected Object checkPermission(MethodKey methodKey,
-			PermissionChecker permissionChecker, long entryId, String actionId)
-			throws PortalException {
+	protected Object checkPermission(
+			MethodKey methodKey, PermissionChecker permissionChecker,
+			long entryId, String actionId) throws PortalException {
 
 		try {
 			return PortalClassInvoker.invoke(
@@ -182,5 +186,6 @@ public class ScreensRatingsEntryServiceImpl
 			"check", PermissionChecker.class, long.class, String.class);
 
 	private static Log _log = LogFactoryUtil.getLog(
-ScreensRatingsEntryServiceImpl.class);
+		ScreensRatingsEntryServiceImpl.class);
+
 }

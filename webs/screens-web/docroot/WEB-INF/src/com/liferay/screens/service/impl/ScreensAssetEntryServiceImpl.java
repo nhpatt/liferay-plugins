@@ -172,36 +172,43 @@ public class ScreensAssetEntryServiceImpl
 	public JSONObject getAssetEntry(long entryId, Locale locale)
 		throws PortalException, SystemException {
 
-		checkPermission(_checkPermissionMethodKeyEntryId, getPermissionChecker(), null, entryId, null, null, ActionKeys.VIEW);
+		checkPermission(
+			_checkPermissionMethodKeyEntryId, getPermissionChecker(), null,
+			entryId, null, null, ActionKeys.VIEW);
 
 		return toJSONObject(assetEntryLocalService.getEntry(entryId), locale);
 	}
 
 	public JSONObject getAssetEntry(
 		String className, long classPK, Locale locale)
-		throws PortalException, SystemException {
+			throws PortalException, SystemException {
 
-		checkPermission(_checkPermissionMethodKeyClassNameClassPK, getPermissionChecker(), null, 0, className, classPK, ActionKeys.VIEW);
+		checkPermission(
+		_checkPermissionMethodKeyClassNameClassPK,
+				getPermissionChecker(), null, 0, className, classPK,
+				ActionKeys.VIEW);
 
-		return toJSONObject(assetEntryLocalService.getEntry(className, classPK), locale);
+		return toJSONObject(
+			assetEntryLocalService.getEntry(className, classPK), locale);
 	}
 
-	protected Object checkPermission(MethodKey methodKey, PermissionChecker permissionChecker,
-			AssetEntry assetEntry, long entryId, String className, long classPK, String actionId)
-			throws PortalException {
+	protected Object checkPermission(
+		MethodKey methodKey, PermissionChecker permissionChecker,
+		AssetEntry assetEntry, long entryId, String className, long classPK,
+		String actionId) throws PortalException {
 
 		try {
 			if (assetEntry != null) {
-				return PortalClassInvoker.invoke(methodKey,
-						permissionChecker, assetEntry, actionId);
+				return PortalClassInvoker.invoke(
+					methodKey, permissionChecker, assetEntry, actionId);
 			}
 			else if (entryId != 0) {
-				return PortalClassInvoker.invoke(methodKey,
-						permissionChecker, entryId, actionId);
+				return PortalClassInvoker.invoke(
+					methodKey, permissionChecker, entryId, actionId);
 			}
 			else {
-				return PortalClassInvoker.invoke(methodKey,
-						permissionChecker, className, classPK, actionId);
+				return PortalClassInvoker.invoke(
+					methodKey, permissionChecker, className, classPK, actionId);
 			}
 		}
 		catch (PortalException pe) {
@@ -221,8 +228,9 @@ public class ScreensAssetEntryServiceImpl
 			assetEntries.size());
 
 		for (AssetEntry assetEntry : assetEntries) {
-			if (checkPermission(_containsPermissionMethodKey,
-					getPermissionChecker(), assetEntry, 0, null, null, ActionKeys.VIEW)) {
+			if (checkPermission(
+					_containsPermissionMethodKey, getPermissionChecker(),
+				assetEntry, 0, null, null, ActionKeys.VIEW)) {
 
 				filteredAssetEntries.add(assetEntry);
 			}
@@ -376,7 +384,7 @@ public class ScreensAssetEntryServiceImpl
 
 	protected JSONArray toJSONArray(
 		List<AssetEntry> assetEntries, Locale locale)
-		throws PortalException, SystemException {
+			throws PortalException, SystemException {
 
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
